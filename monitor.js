@@ -175,7 +175,7 @@ async function sMonitor() {
                                 }
                             }
 
-                            if (followers >= minFollowers || ftKey >= minFTKeyPrice) {
+                            if (followers >= minFollowers && ftKey >= minFTKeyPrice) {
                                 sendMessage(`**New user:** twitter.com/${act.trader.user_name}\n\n**Followers:** ${followers}\n**FT KeyPrice:** ${ftKey}\n\n**PostTech Buy URL:** https://post.tech/buy-sell/${act.trader.user_id}`)
                             
                             }
