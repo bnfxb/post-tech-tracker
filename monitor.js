@@ -72,8 +72,9 @@ async function getFollowersCount(agent, username) {
 }
 
 async function sMonitor() {
+    let lastUserID = '';
+    
     for (; ;) {
-        let lastUserID = '';
 
         try {
 
