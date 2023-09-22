@@ -1,5 +1,6 @@
 import fetch from 'node-fetch';
 import { HttpsProxyAgent } from 'https-proxy-agent';
+import {formatEther} from 'ethers';
 
 const Delay = async (ms) => new Promise(resolve => setTimeout(resolve, ms));
 
@@ -133,7 +134,7 @@ async function sMonitor() {
                             if (sentUsers.includes(act.trader.user_name))
                                 return;
                             else
-                                sentMsgs.push(act.trader.user_name)
+                                sentUsers.push(act.trader.user_name)
 
                             const ftUserWallet = await fetch(`https://prod-api.kosetto.com/search/users?username=${act.trader.user_name}`, {
                                 "headers": {
@@ -169,7 +170,7 @@ async function sMonitor() {
                             let ftKey = undefined;
                             if (ftUserWallet) {
                                 try {
-                                    ftKey = ethers.utils.formatEther(ftUserWallet.displayPrice)
+                                    ftKey = formatEther(ftUserWallet.displayPrice)
                                 } catch (err) {
                                     console.log("Failed to get ft key price:", err);
                                 }
