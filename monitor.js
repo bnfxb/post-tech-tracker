@@ -63,10 +63,7 @@ async function getFollowersCount(agent, username) {
         "body": null,
         "method": "GET"
     })
-        .then(r => {
-            console.log("Twitter:", r.status)
-            return r.json()
-        })
+        .then(r => r.json())
         .then(d => {
             return d.data.user.result.legacy.followers_count
         })
