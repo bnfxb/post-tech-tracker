@@ -11,6 +11,7 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "ethers": "^6.7.1",
     "https-proxy-agent": "^7.0.2",
     "node-fetch": "^3.3.2"
   }
