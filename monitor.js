@@ -15,7 +15,7 @@ const sentUsers = [];
 
 // Twitter
 const twBearer = ""; // twitter bearer
-const twCookies = ""; //your account tw cookies
+const twCookies = ``; //your account tw cookies
 const twCsrf = ""; // your account tw csrf token
 
 // proxies, add/change
