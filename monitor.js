@@ -189,7 +189,7 @@ async function sMonitor() {
 
 (async () => {
     for (; ;) {
-        sMonitor(); // me must not await it
+        sMonitor(); // we must not await it
         await Delay(monitorDelay);
     }
 })();
