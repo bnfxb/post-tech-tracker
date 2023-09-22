@@ -187,7 +187,7 @@ async function sMonitor() {
                     lastUserID = recentTrades[0].trader.user_id || recentTrades[0].trader.userId
                 })
                 .catch(err => {
-                    console.log("ERROR actions:", err)
+                    console.log("Failed to get actions:", err)
                 })
 
         } catch (err) {
