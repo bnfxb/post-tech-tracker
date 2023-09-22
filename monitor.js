@@ -72,13 +72,9 @@ async function getFollowersCount(agent, username) {
         })
 }
 
+let lastUserID = '';
 async function sMonitor() {
-    let lastUserID = '';
-    
-    for (; ;) {
-
         try {
-
             await fetch("https://api.post.tech/wallet-post/wallet/get-recent-action", {
                 "headers": {
                     "accept": "application/json, text/plain, */*",
@@ -176,7 +172,7 @@ async function sMonitor() {
                                 }
                             }
 
-                            if (followers >= minFollowers && ftKey >= minFTKeyPrice) {
+                            if (followers >= minFollowers || ftKey >= minFTKeyPrice) {
                                 sendMessage(`**New user:** twitter.com/${act.trader.user_name}\n\n**Followers:** ${followers}\n**FT KeyPrice:** ${ftKey}\n\n**PostTech Buy URL:** https://post.tech/buy-sell/${act.trader.user_id}`)
                             
                             }
@@ -187,17 +183,17 @@ async function sMonitor() {
                     lastUserID = recentTrades[0].trader.user_id || recentTrades[0].trader.userId
                 })
                 .catch(err => {
-                    console.log("Failed to get actions:", err)
+                    console.log("ERROR actions:", err)
                 })
 
         } catch (err) {
             console.log("Failed to monitor", err);
-        }
-
-        await Delay(monitorDelay);
-    }
+        }    
 }
 
 (async () => {
-    await sMonitor();
+    for (;;) {
+        sMonitor();
+        await Delay(monitorDelay);
+    }
 })();
