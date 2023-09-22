@@ -74,126 +74,128 @@ async function getFollowersCount(agent, username) {
 
 let lastUserID = '';
 async function sMonitor() {
-        try {
-            await fetch("https://api.post.tech/wallet-post/wallet/get-recent-action", {
-                "headers": {
-                    "accept": "application/json, text/plain, */*",
-                    "accept-language": "en-US,en;q=0.9",
-                    "authorization": ptAuthToken,
-                    "Referer": "https://post.tech/",
-                    "Referrer-Policy": "strict-origin-when-cross-origin"
-                },
-                "body": null,
-                "method": "GET",
-                agent: agents[Math.floor(Math.random() * agents.length)]
-            })
-                .then(r => {
-                    return r.text()
-                })
-                .then(async data => {
-                    const jsonData = JSON.parse(data)
-                    const recentTrades = jsonData.data
+    try {
 
-                    if (!recentTrades) {
-                        console.log("Bad data:", recentTrades)
+        await fetch("https://api.post.tech/wallet-post/wallet/get-recent-action", {
+            "headers": {
+                "accept": "application/json, text/plain, */*",
+                "accept-language": "en-US,en;q=0.9",
+                "authorization": ptAuthToken,
+                "Referer": "https://post.tech/",
+                "Referrer-Policy": "strict-origin-when-cross-origin"
+            },
+            "body": null,
+            "method": "GET",
+            agent: agents[Math.floor(Math.random() * agents.length)]
+        })
+            .then(r => {
+                return r.text()
+            })
+            .then(async data => {
+                const jsonData = JSON.parse(data)
+                const recentTrades = jsonData.data
+
+                if (!recentTrades) {
+                    console.log("Bad data:", recentTrades)
+                    return
+                }
+
+                if (recentTrades[0].trader.user_id == lastUserID || recentTrades[0].trader.userId == lastUserID)
+                    return;
+
+                for (let i = 0; i < 150; i++) {
+                    const act = recentTrades[i]
+
+                    if (!act.trader.user_id) {
+                        act.trader.user_id = act.trader.userId
+                        act.subject.user_id = act.subject.userId
+                        act.tx_hash = act.txHash
+                        act.trader.user_name = act.trader.userName
+                        act.subject.user_name = act.subject.userName
+                    }
+
+                    if (!lastUserID) {
+                        lastUserID = act.trader.user_id
                         return
                     }
 
-                    if (recentTrades[0].trader.user_id == lastUserID || recentTrades[0].trader.userId == lastUserID)
+                    if (act.trader.user_id == lastUserID)
                         return;
 
-                    for (let i = 0; i < 150; i++) {
-                        const act = recentTrades[i]
+                    if (act.trader.user_id == act.subject.user_id && act.action == 'buy' && act.value == 0) {
 
-                        if (!act.trader.user_id) {
-                            act.trader.user_id = act.trader.userId
-                            act.subject.user_id = act.subject.userId
-                            act.tx_hash = act.txHash
-                            act.trader.user_name = act.trader.userName
-                            act.subject.user_name = act.subject.userName
-                        }
+                        const followers = await getFollowersCount(agents[Math.floor(Math.random() * agents.length)], act.subject.user_name)
 
-                        if (!lastUserID) {
-                            lastUserID = act.trader.user_id
-                            return
-                        }
+                        console.log("User: ", act.trader.user_name, followers)
 
-                        if (act.trader.user_id == lastUserID)
+                        if (sentUsers.includes(act.trader.user_name))
                             return;
+                        else
+                            sentUsers.push(act.trader.user_name)
 
-                        if (act.trader.user_id == act.subject.user_id && act.action == 'buy' && act.value == 0) {
-
-                            const followers = await getFollowersCount(agents[Math.floor(Math.random() * agents.length)], act.subject.user_name)
-
-                            console.log("User: ", act.trader.user_name, followers)
-
-                            if (sentUsers.includes(act.trader.user_name))
-                                return;
-                            else
-                                sentUsers.push(act.trader.user_name)
-
-                            const ftUserWallet = await fetch(`https://prod-api.kosetto.com/search/users?username=${act.trader.user_name}`, {
-                                "headers": {
-                                    "accept": "application/json",
-                                    "authorization": ftAuthToken,
-                                    "content-type": "application/json",
-                                    "Referer": "https://www.friend.tech/",
-                                    "Referrer-Policy": "strict-origin-when-cross-origin"
-                                },
-                                "body": null,
-                                "method": "GET"
-                            })
-                                .then(r => r.json())
-                                .then(async d => {
-                                    const addr = d.users[0].address
-                                    const ftUser = await fetch(`https://prod-api.kosetto.com/users/${addr}`, {
-                                        "headers": {
-                                            "Referer": "https://www.friend.tech/",
-                                            "Referrer-Policy": "strict-origin-when-cross-origin"
-                                        },
-                                        "body": null,
-                                        "method": "GET"
-                                    }).catch(err => {
-                                        console.log("Failed to get ft user", err)
-                                    })
-                                        .then(r => r.json())
-                                        .catch(err => console.log(err))
-
-                                    return ftUser
+                        const ftUserWallet = await fetch(`https://prod-api.kosetto.com/search/users?username=${act.trader.user_name}`, {
+                            "headers": {
+                                "accept": "application/json",
+                                "authorization": ftAuthToken,
+                                "content-type": "application/json",
+                                "Referer": "https://www.friend.tech/",
+                                "Referrer-Policy": "strict-origin-when-cross-origin"
+                            },
+                            "body": null,
+                            "method": "GET"
+                        })
+                            .then(r => r.json())
+                            .then(async d => {
+                                const addr = d.users[0].address
+                                const ftUser = await fetch(`https://prod-api.kosetto.com/users/${addr}`, {
+                                    "headers": {
+                                        "Referer": "https://www.friend.tech/",
+                                        "Referrer-Policy": "strict-origin-when-cross-origin"
+                                    },
+                                    "body": null,
+                                    "method": "GET"
+                                }).catch(err => {
+                                    console.log("Failed to get ft user", err)
                                 })
-                                .catch(err => console.log(err))
+                                    .then(r => r.json())
+                                    .catch(err => console.log(err))
 
-                            let ftKey = undefined;
-                            if (ftUserWallet) {
-                                try {
-                                    ftKey = formatEther(ftUserWallet.displayPrice)
-                                } catch (err) {
-                                    console.log("Failed to get ft key price:", err);
-                                }
-                            }
+                                return ftUser
+                            })
+                            .catch(err => console.log(err))
 
-                            if (followers >= minFollowers || ftKey >= minFTKeyPrice) {
-                                sendMessage(`**New user:** twitter.com/${act.trader.user_name}\n\n**Followers:** ${followers}\n**FT KeyPrice:** ${ftKey}\n\n**PostTech Buy URL:** https://post.tech/buy-sell/${act.trader.user_id}`)
-                            
+                        let ftKey = undefined;
+                        if (ftUserWallet) {
+                            try {
+                                ftKey = formatEther(ftUserWallet.displayPrice)
+                            } catch (err) {
+                                console.log("Failed to get ft key price:", err);
                             }
+                        }
+
+                        if (followers >= minFollowers || ftKey >= minFTKeyPrice) {
+                            sendMessage(`**New user:** twitter.com/${act.trader.user_name}\n\n**Followers:** ${followers}\n**FT KeyPrice:** ${ftKey}\n\n**PostTech Buy URL:** https://post.tech/buy-sell/${act.trader.user_id}`)
 
                         }
+
                     }
+                }
 
-                    lastUserID = recentTrades[0].trader.user_id || recentTrades[0].trader.userId
-                })
-                .catch(err => {
-                    console.log("ERROR actions:", err)
-                })
+                lastUserID = recentTrades[0].trader.user_id || recentTrades[0].trader.userId
+            })
+            .catch(err => {
+                console.log("ERROR actions:", err)
+            })
 
-        } catch (err) {
-            console.log("Failed to monitor", err);
-        }    
+    } catch (err) {
+        console.log("Failed to monitor", err);
+    }
 }
 
 (async () => {
-    for (;;) {
-        sMonitor();
+    for (; ;) {
+        sMonitor(); // me must not await it
         await Delay(monitorDelay);
     }
 })();
+
